@@ -1,0 +1,30 @@
+{
+  "name": "scas",
+  "version": "1.0.0",
+  "private": true,
+  "description": "SCAS - Student Classroom Attendance System prototype (IGCSE Computer Science)",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "typecheck": "tsc --noEmit",
+    "verify": "tsx scripts/verify.ts",
+    "seed:sql": "tsx scripts/generate-seed-sql.ts"
+  },
+  "dependencies": {
+    "@fluentui/react-combobox": "^9.17.7",
+    "@fluentui/react-components": "^9.74.9",
+    "@fluentui/react-icons": "^2.0.343",
+    "next": "15.5.4",
+    "react": "19.1.0",
+    "react-dom": "19.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.2",
+    "@types/react": "^19.1.0",
+    "@types/react-dom": "^19.1.0",
+    "tsx": "^4.23.15",
+    "typescript": "^5.7.2"
+  }
+}
