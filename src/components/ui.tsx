@@ -86,7 +86,32 @@ export function TerminalPill({ status, mode }: { status: TerminalStatus; mode?: 
     isEvent ? 'danger' : status === 'ONLINE' ? 'success' : status === 'SYNCING' ? 'warning' : 'subtle';
   return (
     <Badge appearance="tint" color={color} size="small">
-      {isEvent ? 'EVENT MODE' : status}
+      {isEvent ? 'Event mode' : status}
+    </Badge>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* Scan result badge (single Fluent Badge system)                       */
+/* ------------------------------------------------------------------ */
+
+type BadgeColor = 'success' | 'warning' | 'danger' | 'informative' | 'subtle';
+
+const SCAN_RESULT: Record<string, { color: BadgeColor; label: string }> = {
+  ACCEPTED: { color: 'success', label: 'Accepted' },
+  FACE_REVIEW: { color: 'informative', label: 'Review' },
+  DUPLICATE_IGNORED: { color: 'warning', label: 'Duplicate' },
+  NOT_EXPECTED: { color: 'danger', label: 'Not expected' },
+  INVALID_CARD: { color: 'danger', label: 'Invalid card' },
+  TERMINAL_OFFLINE_QUEUED: { color: 'warning', label: 'Queued' },
+  EVENT_MODE_QUEUED: { color: 'subtle', label: 'Event log' },
+};
+
+export function ScanResultBadge({ result }: { result: string }) {
+  const s = SCAN_RESULT[result] ?? { color: 'subtle' as BadgeColor, label: result };
+  return (
+    <Badge appearance="tint" color={s.color} size="small">
+      {s.label}
     </Badge>
   );
 }

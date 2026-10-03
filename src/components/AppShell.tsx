@@ -5,6 +5,13 @@
  * ------------------------------------------------------------------
  * A Windows 11 / Fluent 2 style shell:
  *   left navigation rail  +  command bar header  +  status strip
+ *
+ * Icon convention (Fluent 2):
+ *   - primary navigation icons ...... 20 px
+ *   - compact command-bar buttons ... 16 px
+ *   - labelled buttons .............. 20 px
+ *   - status / information ........... 12–16 px
+ * Never mix 16 / 20 / 24 px within the same control group.
  */
 
 import React, { useMemo, useState } from 'react';
@@ -20,11 +27,6 @@ import {
   DialogSurface,
   DialogTitle,
   Divider,
-  Menu,
-  MenuItem,
-  MenuList,
-  MenuPopover,
-  MenuTrigger,
   Tab,
   TabList,
   Text,
@@ -33,25 +35,26 @@ import {
   type SelectTabEvent,
 } from '@fluentui/react-components';
 import {
-  CalendarLtr16Regular,
+  ArrowSync16Regular,
+  Bug20Regular,
+  CalendarLtr20Regular,
   ChevronLeft16Regular,
   ChevronRight16Regular,
-  ClipboardTaskListLtrRegular,
-  DataTrending24Regular,
-  Desktop16Regular,
+  ClipboardTaskListLtr20Regular,
+  DataTrending20Regular,
+  Desktop20Regular,
   ErrorCircle16Regular,
-  Grid24Regular,
-  PeopleTeam24Regular,
-  Person24Regular,
+  Grid20Regular,
+  Laptop20Regular,
+  PeopleTeam20Regular,
+  Person20Regular,
   Play16Regular,
   RecordStop16Regular,
-  ShieldTask16Regular,
-  WeatherSunny16Regular,
-  ArrowSync16Regular,
-  Bug16Regular,
+  RecordStop20Regular,
+  ShieldTask20Regular,
 } from '@fluentui/react-icons';
 import { DAYS } from '@/lib/types';
-import { formatTime, toMinutes } from '@/lib/time';
+import { formatTime } from '@/lib/time';
 import { useSim } from '@/lib/store/sim-store';
 import { getCurrentTimetableBlock } from '@/lib/engine/timetable-engine';
 import { SCHOOL_DATA } from '@/lib/data';
@@ -59,21 +62,56 @@ import { toLesson } from '@/lib/engine/timetable-engine';
 import { ThemeToggle } from './ThemeToggle';
 
 /* ------------------------------------------------------------------ */
-/* Navigation                                                          */
+/* Navigation — role / task based hierarchy                            */
 /* ------------------------------------------------------------------ */
 
-const NAV = [
-  { href: '/', label: 'Dashboard', icon: <DataTrending24Regular /> },
-  { href: '/device', label: 'Device Simulator', icon: <Desktop16Regular /> },
-  { href: '/teacher', label: 'Teacher', icon: <Person24Regular /> },
-  { href: '/teacher/review', label: 'End-of-Day Review', icon: <ClipboardTaskListLtrRegular /> },
-  { href: '/office', label: 'Office', icon: <Grid24Regular /> },
-  { href: '/office/timetable', label: 'Timetable', icon: <CalendarLtr16Regular /> },
-  { href: '/office/students', label: 'Students', icon: <PeopleTeam24Regular /> },
-  { href: '/office/events', label: 'Events', icon: <ShieldTask16Regular /> },
-  { href: '/office/terminals', label: 'Terminals', icon: <Desktop16Regular /> },
-  { href: '/data', label: 'Attendance & Audit', icon: <RecordStop16Regular /> },
-  { href: '/tests', label: 'Testing Panel', icon: <Bug16Regular /> },
+interface NavItemDef {
+  href: string;
+  label: string;
+  icon: React.ReactNode;
+}
+interface NavGroup {
+  label: string;
+  items: NavItemDef[];
+}
+
+const NAV: NavGroup[] = [
+  {
+    label: 'Overview',
+    items: [{ href: '/', label: 'Overview', icon: <DataTrending20Regular /> }],
+  },
+  {
+    label: 'Attendance',
+    items: [
+      { href: '/device', label: 'Live attendance', icon: <Desktop20Regular /> },
+      { href: '/teacher/review', label: 'End-of-day review', icon: <ClipboardTaskListLtr20Regular /> },
+    ],
+  },
+  {
+    label: 'Staff',
+    items: [{ href: '/teacher', label: 'Teacher', icon: <Person20Regular /> }],
+  },
+  {
+    label: 'School',
+    items: [
+      { href: '/office', label: 'Office', icon: <Grid20Regular /> },
+      { href: '/office/timetable', label: 'Timetable', icon: <CalendarLtr20Regular /> },
+      { href: '/office/students', label: 'Students', icon: <PeopleTeam20Regular /> },
+      { href: '/office/terminals', label: 'Terminals', icon: <Laptop20Regular /> },
+    ],
+  },
+  {
+    label: 'Emergency',
+    items: [{ href: '/office/events', label: 'Events', icon: <ShieldTask20Regular /> }],
+  },
+  {
+    label: 'Records',
+    items: [{ href: '/data', label: 'Attendance & audit', icon: <RecordStop20Regular /> }],
+  },
+  {
+    label: 'Prototype',
+    items: [{ href: '/tests', label: 'Testing panel', icon: <Bug20Regular /> }],
+  },
 ];
 
 function NavItem({
@@ -101,13 +139,10 @@ function NavItem({
         color: active
           ? 'var(--colorNeutralForegroundOnBrand)'
           : 'var(--colorNeutralForeground1)',
-        background: active ? 'var(--colorNeutralBackground1Selected)' : 'transparent',
+        background: active ? 'var(--colorBrandBackground1)' : 'transparent',
         fontSize: 13.5,
         lineHeight: '20px',
         fontWeight: active ? 600 : 400,
-        borderLeft: active
-          ? '2px solid var(--colorBrandForeground1)'
-          : '2px solid transparent',
         transition: 'background-color 120ms ease-out',
         whiteSpace: 'nowrap',
         overflow: 'hidden',
@@ -117,9 +152,7 @@ function NavItem({
         style={{
           display: 'inline-flex',
           alignItems: 'center',
-          color: active
-            ? 'var(--colorBrandForeground1)'
-            : 'var(--colorNeutralForeground2)',
+          color: active ? 'var(--colorBrandForeground1)' : 'var(--colorNeutralForeground2)',
         }}
       >
         {icon}
@@ -143,12 +176,7 @@ const WeekTabs: React.FC<{ value: WeekTab; onChange: (v: WeekTab) => void }> = (
     onChange(data.value as WeekTab);
   };
   return (
-    <TabList
-      selectedValue={value}
-      onTabSelect={onTabSelect}
-      size="small"
-      appearance="subtle"
-    >
+    <TabList selectedValue={value} onTabSelect={onTabSelect} size="small" appearance="subtle">
       <Tab value="A">Week A</Tab>
       <Tab value="B">Week B</Tab>
     </TabList>
@@ -205,7 +233,7 @@ function StatusStrip() {
       {activeEvents > 0 && (
         <span style={{ color: 'var(--colorPaletteCrimsonForeground1)', fontWeight: 600 }}>
           <span className="scas-dot scas-dot-event" />
-          EVENT MODE ACTIVE
+          Event mode active
         </span>
       )}
       <span className="scas-spacer" />
@@ -222,15 +250,15 @@ function StatusStrip() {
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const { state, dispatch, setClock, data } = useSim();
+  const { state, dispatch, setClock } = useSim();
   const [roleDialogOpen, setRoleDialogOpen] = useState(false);
 
   const activeBlocks = useMemo(
-    () => getCurrentTimetableBlock(data, { week: state.week, day: state.day, time: state.time }),
-    [data, state.week, state.day, state.time],
+    () => getCurrentTimetableBlock(SCHOOL_DATA, { week: state.week, day: state.day, time: state.time }),
+    [state.week, state.day, state.time],
   );
   const currentRoomLesson = activeBlocks.find((b) => b.roomId === state.sim.roomId);
-  const lessonLabel = currentRoomLesson ? toLesson(data, currentRoomLesson) : null;
+  const lessonLabel = currentRoomLesson ? toLesson(SCHOOL_DATA, currentRoomLesson) : null;
 
   const roleLabel =
     state.role === 'office' ? 'Office' : state.role === 'teacher' ? 'Teacher' : 'Student';
@@ -238,13 +266,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   return (
     <div className="scas-shell">
       {/* ---------------- Left navigation ---------------- */}
-      <nav
-        className="scas-nav"
-        style={{
-          background: 'var(--colorNeutralBackground2)',
-          borderRight: '1px solid var(--colorNeutralStroke2)',
-        }}
-      >
+      <nav className="scas-nav">
         <div
           style={{
             height: 'var(--scas-header-height)',
@@ -274,7 +296,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             SC
           </div>
           <Text
-            weight={"semibold"}
+            weight={'semibold'}
             size={500}
             style={{ letterSpacing: '-0.01em', whiteSpace: 'nowrap' }}
             className="scas-nav-label"
@@ -286,69 +308,35 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         <Divider style={{ opacity: 0.6 }} />
 
         <div style={{ paddingTop: 6, overflowY: 'auto', flex: '1 1 auto' }}>
-          <Text
-            size={100}
-            weight={"semibold"}
-            style={{
-              display: 'block',
-              padding: '8px 20px 4px',
-              color: 'var(--colorNeutralForeground4)',
-              letterSpacing: '0.08em',
-              textTransform: 'uppercase',
-            }}
-            className="scas-nav-label"
-          >
-            Workspace
-          </Text>
-          {NAV.slice(0, 4).map((n) => (
-            <NavItem
-              key={n.href}
-              {...n}
-              active={pathname === n.href}
-            />
-          ))}
-
-          <Text
-            size={100}
-            weight={"semibold"}
-            style={{
-              display: 'block',
-              padding: '14px 20px 4px',
-              color: 'var(--colorNeutralForeground4)',
-              letterSpacing: '0.08em',
-              textTransform: 'uppercase',
-            }}
-            className="scas-nav-label"
-          >
-            Office
-          </Text>
-          {NAV.slice(4, 9).map((n) => (
-            <NavItem key={n.href} {...n} active={pathname === n.href} />
-          ))}
-
-          <Text
-            size={100}
-            weight={"semibold"}
-            style={{
-              display: 'block',
-              padding: '14px 20px 4px',
-              color: 'var(--colorNeutralForeground4)',
-              letterSpacing: '0.08em',
-              textTransform: 'uppercase',
-            }}
-            className="scas-nav-label"
-          >
-            Records
-          </Text>
-          {NAV.slice(9).map((n) => (
-            <NavItem key={n.href} {...n} active={pathname === n.href} />
+          {NAV.map((group) => (
+            <div key={group.label}>
+              {group.label && (
+                <Text
+                  size={200}
+                  weight={'semibold'}
+                  style={{
+                    display: 'block',
+                    padding: '12px 20px 4px',
+                    color: 'var(--colorNeutralForeground4)',
+                    letterSpacing: 'normal',
+                    textTransform: 'none',
+                  }}
+                  className="scas-nav-label"
+                >
+                  {group.label}
+                </Text>
+              )}
+              {group.items.map((n) => (
+                <NavItem key={n.href} {...n} active={pathname === n.href} />
+              ))}
+            </div>
           ))}
         </div>
 
         <div style={{ padding: 8, flexShrink: 0 }}>
           <Button
             appearance="subtle"
-            icon={<Bug16Regular />}
+            icon={<Bug20Regular />}
             onClick={() => dispatch({ type: 'RESET_DAY' })}
             style={{ width: '100%', justifyContent: 'flex-start' }}
           >
@@ -373,12 +361,12 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           }}
         >
           <Badge
-            appearance="filled"
+            appearance="tint"
             color="brand"
             size="small"
-            style={{ textTransform: 'uppercase', letterSpacing: '0.06em' }}
+            style={{ textTransform: 'none', letterSpacing: 'normal' }}
           >
-            {state.mode}
+            {state.mode === 'SIMULATION' ? 'Simulation' : 'Live'}
           </Badge>
 
           <div className="scas-row-tight">
@@ -393,12 +381,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 }}
               />
             </Tooltip>
-            <Text
-              weight={"semibold"}
-              size={300}
-              style={{ minWidth: 96, display: 'inline-block' }}
-            >
-              {state.day.slice(0, 3).toUpperCase()} · {state.week}
+            <Text weight={'semibold'} size={300} style={{ minWidth: 84, display: 'inline-block' }}>
+              {state.day.slice(0, 3)} · {state.week}
             </Text>
             <Tooltip content="Next day" relationship="label" withArrow>
               <Button
@@ -415,7 +399,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
           <div style={{ width: 1, height: 20, background: 'var(--colorNeutralStroke2)' }} />
 
-          <Tooltip content={state.running ? 'Pause simulated clock' : 'Run simulated clock'} relationship="label" withArrow>
+          <Tooltip
+            content={state.running ? 'Pause simulated clock' : 'Run simulated clock'}
+            relationship="label"
+            withArrow
+          >
             <Button
               appearance={state.running ? 'primary' : 'subtle'}
               size="small"
@@ -448,17 +436,14 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
           <span className="scas-spacer" />
 
-          <WeekTabs
-            value={state.week}
-            onChange={(v) => setClock({ week: v })}
-          />
+          <WeekTabs value={state.week} onChange={(v) => setClock({ week: v })} />
 
           <div style={{ width: 1, height: 20, background: 'var(--colorNeutralStroke2)' }} />
 
           <Button
             appearance="subtle"
             size="small"
-            icon={<Person24Regular />}
+            icon={<Person20Regular />}
             onClick={() => setRoleDialogOpen(true)}
           >
             {roleLabel}
@@ -493,19 +478,13 @@ function RoleDialog({
 }) {
   const { state, dispatch, data } = useSim();
 
-  // A teacher may only sign in as a teacher who actually appears in the
-  // loaded timetable (requirement 6 / 23).
   const availableTeachers = useMemo(
     () => data.teachers.filter((t) => data.classes.some((c) => c.teacherId === t.teacherId)),
     [data],
   );
 
   return (
-    <Dialog
-      open={open}
-      onOpenChange={(_, d) => onOpenChange(d.open)}
-      modalType="modal"
-    >
+    <Dialog open={open} onOpenChange={(_, d) => onOpenChange(d.open)} modalType="modal">
       <DialogSurface aria-label="Switch role">
         <DialogBody>
           <DialogTitle>Sign in as</DialogTitle>
@@ -535,8 +514,8 @@ function RoleDialog({
 
               {state.role === 'teacher' && (
                 <div style={{ display: 'grid', gap: 4, marginTop: 4 }}>
-                  <Text size={200} weight={"semibold"} style={{ color: 'var(--colorNeutralForeground3)' }}>
-                    TEACHER — constrained to staff timetabled in Year 10
+                  <Text size={200} weight={'semibold'} style={{ color: 'var(--colorNeutralForeground3)' }}>
+                    Teacher — constrained to staff timetabled in Year 10
                   </Text>
                   <div style={{ maxHeight: 220, overflowY: 'auto', display: 'grid', gap: 2 }}>
                     {availableTeachers.map((t) => {
@@ -545,7 +524,9 @@ function RoleDialog({
                         <Button
                           key={t.teacherId}
                           appearance={state.currentTeacherId === t.teacherId ? 'primary' : 'subtle'}
-                          onClick={() => dispatch({ type: 'SET_ROLE', role: 'teacher', teacherId: t.teacherId })}
+                          onClick={() =>
+                            dispatch({ type: 'SET_ROLE', role: 'teacher', teacherId: t.teacherId })
+                          }
                           style={{ justifyContent: 'space-between', width: '100%' }}
                         >
                           <span>{t.name}</span>
@@ -560,7 +541,7 @@ function RoleDialog({
               )}
 
               {state.role === 'student' && (
-                <MessageHint text="Student view uses the simulator identity. Open Device Simulator to change the student or ID." />
+                <MessageHint text="Student view uses the simulator identity. Open the Device Simulator to change the student or ID." />
               )}
             </div>
           </DialogContent>

@@ -22,7 +22,7 @@ import {
   type SelectTabData,
   type SelectTabEvent,
 } from '@fluentui/react-components';
-import { Person24Regular, PersonAvailable24Regular } from '@fluentui/react-icons';
+import { Person20Regular, PersonAvailable20Regular } from '@fluentui/react-icons';
 import { KV, PageHeader, Section, StatGrid, StatTile, StatusPill } from '@/components/ui';
 import { Select } from '@/components/Select';
 import { useSim } from '@/lib/store/sim-store';
@@ -100,10 +100,10 @@ export default function StudentsPage() {
         subtitle="Enrolments, derived individual timetables and class rosters."
         actions={
           <>
-            <Button appearance="outline" icon={<PersonAvailable24Regular />} onClick={() => activate('S-KL3946')}>
+            <Button appearance="outline" icon={<PersonAvailable20Regular />} onClick={() => activate('S-KL3946')}>
               Shu Min · KL3946
             </Button>
-            <Button appearance="outline" icon={<PersonAvailable24Regular />} onClick={() => activate('S-KL5195')}>
+            <Button appearance="outline" icon={<PersonAvailable20Regular />} onClick={() => activate('S-KL5195')}>
               Zichun · KL5195
             </Button>
           </>
@@ -187,7 +187,7 @@ export default function StudentsPage() {
                   flexShrink: 0,
                 }}
               >
-                <Person24Regular />
+                <Person20Regular />
               </div>
               <div style={{ minWidth: 220 }}>
                 <div className="scas-row" style={{ gap: 8 }}>

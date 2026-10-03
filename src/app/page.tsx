@@ -16,8 +16,7 @@ import {
   ErrorCircle16Regular,
   Warning16Regular,
 } from '@fluentui/react-icons';
-import { KV, PageHeader, Section, StatGrid, StatTile } from '@/components/ui';
-import { ScanResultPill } from '@/components/ScanResultPill';
+import { KV, PageHeader, ScanResultBadge, Section, StatGrid, StatTile } from '@/components/ui';
 import { useSim } from '@/lib/store/sim-store';
 import { formatTime } from '@/lib/time';
 import { toLesson } from '@/lib/engine/timetable-engine';
@@ -87,9 +86,9 @@ export default function DashboardPage() {
             <Text
               size={200}
               weight="semibold"
-              style={{ color: 'var(--colorNeutralForeground3)', letterSpacing: '0.06em' }}
+              style={{ color: 'var(--colorNeutralForeground3)', letterSpacing: 'normal' }}
             >
-              SIMULATION CLOCK
+              Simulation clock
             </Text>
             <div
               style={{
@@ -244,7 +243,7 @@ export default function DashboardPage() {
                     <td className="scas-mono">{formatTime(s.timestamp)}</td>
                     <td>{s.terminalId.replace('T-', '')}</td>
                     <td>
-                      <ScanResultPill result={s.result} />
+                      <ScanResultBadge result={s.result} />
                     </td>
                   </tr>
                 ))}

@@ -8,6 +8,15 @@
   --scas-nav-width: 232px;
   --scas-header-height: 48px;
   --scas-status-height: 32px;
+
+  /* Fluent 2 spacing ramp (4px system). Reference these instead of
+     inventing ad-hoc gaps so every screen shares one spacing language. */
+  --scas-space-2: 8px;
+  --scas-space-3: 12px;
+  --scas-space-4: 16px;
+  --scas-space-5: 20px;
+  --scas-space-6: 24px;
+  --scas-space-8: 32px;
 }
 
 * {
@@ -325,13 +334,13 @@ body {
 }
 
 .scas-camera.is-offline::after {
-  content: 'NO SIGNAL';
+  content: 'No signal';
   position: absolute;
   inset: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.04em;
   font-size: 13px;
   color: rgba(255, 255, 255, 0.75);
   background: repeating-linear-gradient(
@@ -352,6 +361,26 @@ body {
 }
 
 /* ---------------- Misc layout helpers ---------------- */
+
+/* Sentence-case caption used for field labels and metadata (ROOM,
+   LESSON, etc.). Replaces the all-caps shouting style. */
+.scas-caption {
+  font-size: var(--fontSizeBase200, 12px);
+  font-weight: 600;
+  letter-spacing: normal;
+  text-transform: none;
+  color: var(--colorNeutralForeground3);
+  line-height: 16px;
+}
+
+/* A lightweight bordered surface for data tables — avoids wrapping
+   every table in a heavy Card. */
+.scas-surface {
+  border: 1px solid var(--colorNeutralStroke2);
+  border-radius: var(--borderRadiusMedium);
+  background: var(--colorNeutralBackground1);
+  overflow: hidden;
+}
 
 .scas-row {
   display: flex;

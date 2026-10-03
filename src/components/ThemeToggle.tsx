@@ -1,7 +1,7 @@
 'use client';
 
 import { Button, Tooltip } from '@fluentui/react-components';
-import { WeatherSunny16Regular, WeatherMoon20Regular } from '@fluentui/react-icons';
+import { WeatherSunny20Regular, WeatherMoon20Regular } from '@fluentui/react-icons';
 import { createContext, useContext, useEffect, useState } from 'react';
 
 type Mode = 'light' | 'dark';
@@ -43,7 +43,7 @@ export function ThemeToggle() {
       <Button
         appearance="subtle"
         size="small"
-        icon={mode === 'light' ? <WeatherSunny16Regular /> : <WeatherMoon20Regular />}
+        icon={mode === 'light' ? <WeatherSunny20Regular /> : <WeatherMoon20Regular />}
         onClick={toggle}
         aria-label="Toggle colour theme"
       />

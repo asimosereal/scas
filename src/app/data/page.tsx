@@ -17,9 +17,8 @@ import {
   type SelectTabData,
   type SelectTabEvent,
 } from '@fluentui/react-components';
-import { KV, PageHeader, Section, StatGrid, StatTile, StatusPill } from '@/components/ui';
+import { KV, PageHeader, ScanResultBadge, Section, StatGrid, StatTile, StatusPill } from '@/components/ui';
 import { Select } from '@/components/Select';
-import { ScanResultPill } from '@/components/ScanResultPill';
 import { useSim } from '@/lib/store/sim-store';
 import { formatDuration, formatTime } from '@/lib/time';
 import { getStudentGroup } from '@/lib/data/students';
@@ -264,7 +263,7 @@ export default function DataPage() {
                       {s.studentId ? `${studentName(s.studentId)} (${studentNum(s.studentId)})` : '—'}
                     </td>
                     <td>
-                      <ScanResultPill result={s.result} />
+                      <ScanResultBadge result={s.result} />
                     </td>
                     <td className="num scas-mono">
                       {s.verificationConfidence !== null ? `${s.verificationConfidence}%` : '—'}

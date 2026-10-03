@@ -14,13 +14,16 @@ import {
   Button,
   Card,
   Checkbox,
+  Field,
+  Input,
   MessageBar,
   MessageBarBody,
   MessageBarTitle,
+  Radio,
   Text,
 } from '@fluentui/react-components';
 import {
-  Warning24Regular,
+  Warning20Regular,
   ShieldTask16Regular,
   Dismiss16Regular,
 } from '@fluentui/react-icons';
@@ -120,23 +123,16 @@ export default function EventsPage() {
         {/* ---------------- Create event ---------------- */}
         <Card appearance="outline" style={{ padding: 16 }}>
           <div className="scas-row" style={{ marginBottom: 12 }}>
-            <Warning24Regular style={{ color: 'var(--colorPaletteMarigoldForeground1)' }} />
+            <Warning20Regular style={{ color: 'var(--colorPaletteMarigoldForeground1)' }} />
             <Text weight="semibold" size={300}>
               Create event
             </Text>
           </div>
 
           <div style={{ display: 'grid', gap: 12 }}>
-            <label style={{ display: 'grid', gap: 4 }}>
-              <Text size={200} weight="semibold">
-                Event name
-              </Text>
-              <input
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                style={inputStyle}
-              />
-            </label>
+            <Field label="Event name">
+              <Input value={name} onChange={(_, d) => setName(d.value)} />
+            </Field>
 
             <div style={{ display: 'grid', gap: 6 }}>
               <Text size={200} weight="semibold">
@@ -163,12 +159,11 @@ export default function EventsPage() {
                     cursor: 'pointer',
                   }}
                 >
-                  <input
-                    type="radio"
-                    name="eventType"
+                  <Radio
                     checked={type === t.value}
                     onChange={() => setType(t.value)}
-                    style={{ marginTop: 3 }}
+                    value={t.value}
+                    style={{ marginTop: 2 }}
                   />
                   <span>
                     <Text size={200} weight="semibold" style={{ display: 'block' }}>
@@ -288,11 +283,11 @@ export default function EventsPage() {
                         <td>
                           {e.active ? (
                             <Badge appearance="filled" color="danger" size="small">
-                              ACTIVE
+                              Active
                             </Badge>
                           ) : (
                             <Badge appearance="outline" size="small">
-                              ENDED
+                              Ended
                             </Badge>
                           )}
                         </td>
@@ -345,7 +340,7 @@ export default function EventsPage() {
                         </td>
                         <td>
                           <Badge appearance="filled" color="danger" size="small">
-                            EVENT
+                            Event
                           </Badge>
                         </td>
                       </tr>
@@ -415,15 +410,3 @@ export default function EventsPage() {
     </>
   );
 }
-
-const inputStyle: React.CSSProperties = {
-  width: '100%',
-  height: 32,
-  padding: '0 8px',
-  borderRadius: 'var(--borderRadiusMedium)',
-  border: '1px solid var(--colorNeutralStroke1)',
-  background: 'var(--colorNeutralBackground1)',
-  color: 'var(--colorNeutralForeground1)',
-  fontSize: 13,
-  fontFamily: 'inherit',
-};

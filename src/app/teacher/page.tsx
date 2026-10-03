@@ -6,6 +6,10 @@
  * Class-specific by design. The lesson shown is derived from
  * teacher + simulation time + room. Move the clock and the roster,
  * the counters and the lesson header all follow automatically.
+ *
+ * The teacher observes the automatically resolved class — they do not
+ * pick rooms to figure out what they are teaching. Room and "simulate
+ * tap" are simulation controls, kept in a separate dialog.
  */
 
 import React, { useMemo, useState } from 'react';
@@ -13,15 +17,21 @@ import {
   Badge,
   Button,
   Card,
-
-  Option,
+  Dialog,
+  DialogActions,
+  DialogBody,
+  DialogContent,
+  DialogSurface,
+  DialogTitle,
+  Field,
+  Input,
   Tab,
   TabList,
   Text,
   type SelectTabData,
   type SelectTabEvent,
 } from '@fluentui/react-components';
-import { Filter16Regular, Person24Regular } from '@fluentui/react-icons';
+import { Search16Regular, Play20Filled } from '@fluentui/react-icons';
 import { KV, PageHeader, Section, StatGrid, StatTile, StatusPill } from '@/components/ui';
 import { Select } from '@/components/Select';
 import { useSim } from '@/lib/store/sim-store';
@@ -39,6 +49,7 @@ export default function TeacherDashboardPage() {
   const { state, data, dispatch, runScan } = useSim();
   const [tab, setTab] = useState<'roster' | 'timeline'>('roster');
   const [filter, setFilter] = useState('');
+  const [simOpen, setSimOpen] = useState(false);
 
   const teacher = data.teachers.find((t) => t.teacherId === state.currentTeacherId);
   const myClasses = useMemo(
@@ -101,20 +112,12 @@ export default function TeacherDashboardPage() {
   return (
     <>
       <PageHeader
-        title="Teacher Dashboard"
+        title="Teacher view"
         subtitle={`${teacher?.name ?? 'Teacher'} — ${myClasses.length} class${myClasses.length === 1 ? '' : 'es'} in the Year 10 timetable`}
         actions={
-          <>
-            <Select
-              value={state.sim.roomId}
-              options={data.rooms.map((r) => ({ key: r.roomId, text: r.roomName }))}
-              onChange={(v) => dispatch({ type: 'SET_SIM', patch: { roomId: v } })}
-              style={{ minWidth: 130 }}
-            />
-            <Button appearance="outline" icon={<Person24Regular />} onClick={runScan}>
-              Simulate tap as selected student
-            </Button>
-          </>
+          <Button appearance="outline" onClick={() => setSimOpen(true)}>
+            Simulation controls
+          </Button>
         }
       />
 
@@ -131,9 +134,9 @@ export default function TeacherDashboardPage() {
           }}
         >
           <div>
-            <Text size={100} style={{ color: 'var(--colorNeutralForeground3)', letterSpacing: '0.06em' }}>
-              CURRENT TIME
-            </Text>
+            <div className="scas-caption" style={{ marginBottom: 2 }}>
+              Current time
+            </div>
             <Text
               size={700}
               weight="semibold"
@@ -147,9 +150,9 @@ export default function TeacherDashboardPage() {
             <>
               <div style={{ width: 1, alignSelf: 'stretch', background: 'var(--colorNeutralStroke2)' }} />
               <div>
-                <Text size={100} style={{ color: 'var(--colorNeutralForeground3)', letterSpacing: '0.06em' }}>
-                  LESSON
-                </Text>
+                <div className="scas-caption" style={{ marginBottom: 2 }}>
+                  Lesson
+                </div>
                 <Text size={400} weight="semibold" style={{ display: 'block' }}>
                   {lesson.subject.name} · {lesson.class.classId}
                 </Text>
@@ -160,9 +163,9 @@ export default function TeacherDashboardPage() {
               </div>
               <div style={{ width: 1, alignSelf: 'stretch', background: 'var(--colorNeutralStroke2)' }} />
               <div>
-                <Text size={100} style={{ color: 'var(--colorNeutralForeground3)', letterSpacing: '0.06em' }}>
-                  CLASS ID
-                </Text>
+                <div className="scas-caption" style={{ marginBottom: 2 }}>
+                  Class ID
+                </div>
                 <Text size={300} weight="semibold" style={{ fontVariantNumeric: 'tabular-nums' }}>
                   {lesson.class.classId}
                 </Text>
@@ -172,11 +175,12 @@ export default function TeacherDashboardPage() {
             <>
               <div style={{ width: 1, alignSelf: 'stretch', background: 'var(--colorNeutralStroke2)' }} />
               <div>
-                <Text size={100} style={{ color: 'var(--colorNeutralForeground3)', letterSpacing: '0.06em' }}>
-                  NO ACTIVE LESSON
-                </Text>
+                <div className="scas-caption" style={{ marginBottom: 2 }}>
+                  No active lesson
+                </div>
                 <Text size={300} weight="semibold">
-                  This teacher has no class running at {formatTime(state.time)} on {state.day} (Week {state.week}).
+                  This teacher has no class running at {formatTime(state.time)} on {state.day} (Week{' '}
+                  {state.week}).
                 </Text>
               </div>
             </>
@@ -224,33 +228,15 @@ export default function TeacherDashboardPage() {
                   : 'No active lesson'}
               </Text>
               <span className="scas-spacer" />
-              <div style={{ position: 'relative', width: 220 }}>
-                <Filter16Regular
-                  style={{
-                    position: 'absolute',
-                    left: 8,
-                    top: 8,
-                    color: 'var(--colorNeutralForeground3)',
-                    pointerEvents: 'none',
-                  }}
-                />
-                <input
+              <Field style={{ margin: 0 }}>
+                <Input
+                  contentBefore={<Search16Regular />}
                   value={filter}
-                  onChange={(e) => setFilter(e.target.value)}
+                  onChange={(_, d) => setFilter(d.value)}
                   placeholder="Filter by name or ID"
-                  style={{
-                    width: '100%',
-                    height: 32,
-                    padding: '0 8px 0 28px',
-                    borderRadius: 'var(--borderRadiusMedium)',
-                    border: '1px solid var(--colorNeutralStroke1)',
-                    background: 'var(--colorNeutralBackground1)',
-                    color: 'var(--colorNeutralForeground1)',
-                    fontSize: 13,
-                    fontFamily: 'inherit',
-                  }}
+                  style={{ width: 240 }}
                 />
-              </div>
+              </Field>
             </div>
 
             <div className="scas-table-scroll" style={{ border: 0, borderRadius: 0, maxHeight: 520 }}>
@@ -308,15 +294,15 @@ export default function TeacherDashboardPage() {
                         <td>
                           {rec?.reviewStatus === 'PENDING' ? (
                             <Badge appearance="tint" color="informative" size="small">
-                              YES
+                              Yes
                             </Badge>
                           ) : rec?.reviewStatus === 'OVERRIDDEN' ? (
                             <Badge appearance="tint" color="brand" size="small">
-                              OVERRIDDEN
+                              Overridden
                             </Badge>
                           ) : rec?.reviewStatus === 'CONFIRMED' ? (
                             <Badge appearance="tint" color="success" size="small">
-                              CONFIRMED
+                              Confirmed
                             </Badge>
                           ) : (
                             '—'
@@ -368,10 +354,7 @@ export default function TeacherDashboardPage() {
                     const isNow = state.time >= b.startTime && state.time < b.endTime;
                     const exp = getExpectedStudents(data, b.classId, state.week);
                     const recs = state.attendance.filter((r) => r.blockId === b.blockId);
-                    const sum = summariseLesson(
-                      exp.map((x) => x.studentId),
-                      recs,
-                    );
+                    const sum = summariseLesson(exp.map((x) => x.studentId), recs);
                     return (
                       <tr
                         key={b.blockId}
@@ -409,6 +392,49 @@ export default function TeacherDashboardPage() {
           </Text>
         </Card>
       </Section>
+
+      {/* ---------------- Simulation controls dialog ---------------- */}
+      <Dialog
+        open={simOpen}
+        onOpenChange={(_, d) => setSimOpen(d.open)}
+        modalType="modal"
+      >
+        <DialogSurface aria-label="Simulation controls">
+          <DialogBody>
+            <DialogTitle>Simulation controls</DialogTitle>
+            <DialogContent>
+              <div style={{ display: 'grid', gap: 14 }}>
+                <Field label="Room" style={{ display: 'grid', gap: 4 }}>
+                  <Select
+                    value={state.sim.roomId}
+                    options={data.rooms.map((r) => ({ key: r.roomId, text: r.roomName }))}
+                    onChange={(v) => dispatch({ type: 'SET_SIM', patch: { roomId: v } })}
+                  />
+                </Field>
+                <Text size={200} style={{ color: 'var(--colorNeutralForeground3)' }}>
+                  The room selector is a simulation aid. In normal use the lesson is resolved from the
+                  timetable and the clock — the teacher does not choose rooms.
+                </Text>
+                <Button
+                  appearance="primary"
+                  icon={<Play20Filled />}
+                  onClick={() => {
+                    runScan();
+                    setSimOpen(false);
+                  }}
+                >
+                  Simulate tap as selected student
+                </Button>
+              </div>
+            </DialogContent>
+            <DialogActions>
+              <Button appearance="secondary" onClick={() => setSimOpen(false)}>
+                Close
+              </Button>
+            </DialogActions>
+          </DialogBody>
+        </DialogSurface>
+      </Dialog>
     </>
   );
 }

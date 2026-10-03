@@ -44,7 +44,9 @@ import {
   hasFinished,
   markAbsentStudents,
   processAutoTransfer,
+  processBreak,
   registerBlockStarts,
+  type BreakState,
 } from '../engine/attendance-engine';
 import {
   getBlockForRoom,
@@ -163,7 +165,7 @@ type Action =
   | { type: 'SET_SCENARIO'; patch: Partial<SimulatorState['scenario']> }
   | { type: 'APPLY_SCAN'; payload: ScanOutcome }
   | { type: 'SET_TERMINAL_STATUS'; terminalId: string; status: Terminal['status'] }
-  | { type: 'TOGGLE_BREAK'; studentId: string; minutes: number; record: AttendanceRecord | null }
+  | { type: 'TOGGLE_BREAK'; studentId: string; break: BreakState; record: AttendanceRecord | null }
   | { type: 'OVERRIDE'; recordId: string; newStatus: AttendanceRecord['status']; reason: string; teacherId: string }
   | { type: 'REVIEW_CONFIRM'; recordId: string; teacherId: string }
   | { type: 'ACTIVATE_EVENT'; event: ScasEvent }
@@ -250,6 +252,7 @@ function reducer(state: SimState, action: Action): SimState {
     case 'TOGGLE_BREAK':
       return {
         ...state,
+        breakState: { ...state.breakState, [action.studentId]: action.break },
         attendance: action.record
           ? state.attendance.map((r) =>
               r.attendanceId === action.record!.attendanceId ? action.record! : r,
@@ -379,7 +382,9 @@ interface Ctx {
   teacherBlock: ReturnType<typeof getCurrentTeacherBlock>;
   expectedLesson: ReturnType<typeof getStudentExpectedClass>;
   validation: ReturnType<typeof validateStudentRoom> | null;
+  breakState: SimState['breakState'];
   runScan: () => void;
+  toggleBreak: (studentId: string) => void;
   setClock: (patch: Partial<Pick<SimState, 'week' | 'day' | 'date' | 'time'>>) => void;
 }
 
@@ -676,6 +681,52 @@ export function SimProvider({ children }: { children: React.ReactNode }) {
     [],
   );
 
+  /* --- break workflow (tap → break → tap) ----------------------- */
+  const toggleBreak = useCallback(
+    (studentId: string) => {
+      const block = roomBlock;
+      if (!block) {
+        dispatch({
+          type: 'TOAST',
+          tone: 'info',
+          text: 'No active lesson in this room to take a break from',
+        });
+        return;
+      }
+      const rec = state.attendance.find(
+        (r) => r.studentId === studentId && r.blockId === block.blockId,
+      );
+      if (!rec) {
+        dispatch({
+          type: 'TOAST',
+          tone: 'warning',
+          text: 'Scan in first — there is no attendance record to pause',
+        });
+        return;
+      }
+      const prev: BreakState = state.breakState[studentId] ?? {
+        onBreak: false,
+        breakStartedAt: null,
+        accumulatedMinutes: rec.breakMinutes,
+      };
+      const { next, event, minutes } = processBreak(prev, state.time);
+      const updatedRec: AttendanceRecord =
+        event === 'BREAK_END'
+          ? { ...rec, breakMinutes: rec.breakMinutes + minutes }
+          : rec;
+      dispatch({ type: 'TOGGLE_BREAK', studentId, break: next, record: updatedRec });
+      dispatch({
+        type: 'TOAST',
+        tone: 'info',
+        text:
+          event === 'BREAK_START'
+            ? 'Break started — tap again on return'
+            : `Break ended — ${minutes} min recorded`,
+      });
+    },
+    [state.attendance, state.breakState, state.time, roomBlock],
+  );
+
   const value: Ctx = {
     state,
     dispatch,
@@ -685,7 +736,9 @@ export function SimProvider({ children }: { children: React.ReactNode }) {
     teacherBlock,
     expectedLesson,
     validation,
+    breakState: state.breakState,
     runScan,
+    toggleBreak,
     setClock,
   };
 

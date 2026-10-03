@@ -205,11 +205,11 @@ export default function TerminalsPage() {
                     <td>
                       {t.mode === 'EVENT' ? (
                         <Text size={200} style={{ color: 'var(--colorPaletteCrimsonForeground1)', fontWeight: 600 }}>
-                          EVENT
+                          Event
                         </Text>
                       ) : (
                         <Text size={100} style={{ color: 'var(--colorNeutralForeground3)' }}>
-                          NORMAL
+                          Normal
                         </Text>
                       )}
                     </td>

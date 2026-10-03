@@ -4,10 +4,10 @@ import React, { useMemo, useState } from 'react';
 import Link from 'next/link';
 import { Badge, Button, Card, Tab, TabList, Text } from '@fluentui/react-components';
 import {
-  CalendarLtr16Regular,
-  PeopleTeam24Regular,
-  ShieldTask16Regular,
-  Desktop16Regular,
+  CalendarLtr20Regular,
+  PeopleTeam20Regular,
+  ShieldTask20Regular,
+  Desktop20Regular,
 } from '@fluentui/react-icons';
 import { KV, PageHeader, Section, StatGrid, StatTile, TerminalPill } from '@/components/ui';
 import { Select } from '@/components/Select';
@@ -72,16 +72,16 @@ export default function OfficeDashboardPage() {
         subtitle="System-wide view across the Year 10 cohort, timetable, terminals and events."
         actions={
           <>
-            <Button as="a" href="/office/timetable" appearance="outline" icon={<CalendarLtr16Regular />}>
+            <Button as="a" href="/office/timetable" appearance="outline" icon={<CalendarLtr20Regular />}>
               Central timetable
             </Button>
-            <Button as="a" href="/office/students" appearance="outline" icon={<PeopleTeam24Regular />}>
+            <Button as="a" href="/office/students" appearance="outline" icon={<PeopleTeam20Regular />}>
               Students
             </Button>
-            <Button as="a" href="/office/events" appearance="outline" icon={<ShieldTask16Regular />}>
+            <Button as="a" href="/office/events" appearance="outline" icon={<ShieldTask20Regular />}>
               Events
             </Button>
-            <Button as="a" href="/office/terminals" appearance="outline" icon={<Desktop16Regular />}>
+            <Button as="a" href="/office/terminals" appearance="outline" icon={<Desktop20Regular />}>
               Terminals
             </Button>
           </>
